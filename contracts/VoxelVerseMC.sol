@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity 0.8.20;
 
 import {Base64} from "./libraries/Base64.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -24,6 +24,8 @@ contract VoxelVerseMC is ERC721, Ownable {
         uint characterLevel;
         uint health;
         uint heat;
+        string animation_url;
+
     }
 
     mapping(uint256 => CharacterAttributes) public nftHolderAttributes;
@@ -32,17 +34,20 @@ contract VoxelVerseMC is ERC721, Ownable {
     event CharacterUpdated(uint256 tokenId, CharacterAttributes attributes);
     event CharacterNFTMinted(address indexed recipient, uint256 indexed tokenId, CharacterAttributes attributes);
 
-    constructor() ERC721("VoxelVerseMC", "VVMC") {}
+    constructor() Ownable() ERC721("VoxelVerseMC", "VVMC") {
 
+    }
     /**
      * @dev Mints a new character NFT to the specified recipient address with predefined attributes.
      * Can only be called by the contract owner.
      * @param recipient Address to receive the newly minted NFT.
      */
     function mintCharacterNFT(address recipient) public onlyOwner {
+        uint256 newItemId = _tokenIds.current();
+
         CharacterAttributes memory attributes = CharacterAttributes({
             name: "VoxelVerseMC",
-            imageURI: "https://harlequin-leading-egret-2.mypinata.cloud/ipfs/QmPF4M2eHtzLJX2mXi9GuG8L4uC26WkV1zzmnpNyVmZazk",
+            imageURI: "https://harlequin-leading-egret-2.mypinata.cloud/ipfs/Qmd7NWbw2JdUqnJk7rg1w2X79L36dbrbQ5QbESVzHYt3SH",
             happiness: 50,
             thirst: 100,
             hunger: 100,
@@ -50,10 +55,11 @@ contract VoxelVerseMC is ERC721, Ownable {
             daysSurvived: 1,
             characterLevel: 1,
             health: 100,
-            heat:50
+            heat:50,
+            animation_url: string.concat("https://erc6551-iframe-ruddy.vercel.app","/",Strings.toHexString(uint256(uint160(address(this)))),"/",newItemId.toString(),"/","11155111")
+
         });
 
-        uint256 newItemId = _tokenIds.current();
         require(!_tokenMinted[newItemId], "Character already minted");
 
         _safeMint(recipient, newItemId);
@@ -88,7 +94,7 @@ contract VoxelVerseMC is ERC721, Ownable {
 
         string memory json = string(abi.encodePacked(
             '{"name":"', charAttributes.name, '","description":"This is your beta character in the VoxelVerseMC game!","image":"',
-            charAttributes.imageURI, '","attributes":[',
+            charAttributes.imageURI,  '""animation_url":"', charAttributes.animation_url, '","attributes":[',
             '{"trait_type":"Happiness","value":"', charAttributes.happiness.toString(), '"},',
             '{"trait_type":"Health","value":"', charAttributes.health.toString(), '"},',
             '{"trait_type":"Hunger","value":"', charAttributes.hunger.toString(), '"},',
